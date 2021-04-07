@@ -45,6 +45,7 @@ def main():
         tazendra_ssh_passwd=args.tazendra_ssh_password, from_date=args.from_date, max_num_papers=args.max_num_papers,
         exclude_ids=already_processed, pap_types=["Journal_article"])
     combinations = [pair[0] + " " + pair[1] for pair in itertools.product(COMBINATION_1, COMBINATION_2)]
+    temp_results = ""
     for paper in cm.get_all_papers():
         sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=True)
         matches = set()
@@ -53,8 +54,10 @@ def main():
             matches.update(list(results))
             matches.update([comb for comb in combinations if comb in sentence])
         matches = matches - set([exc.lower() for exc in EXCLUDE_WORDS])
+        temp_results += paper.paper_id + "\t" + " ".join(matches) + "\n"
     # TODO: save results to DB
-    pass
+    with open("temp_results.csv", "w") as out_file:
+        out_file.write(temp_results)
 
 
 if __name__ == '__main__':
