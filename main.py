@@ -9,9 +9,18 @@ from wbtools.db.dbmanager import WBDBManager
 from wbtools.literature.corpus import CorpusManager
 
 
-EXCLUDE_WORDS = ["anti-HA", "anti-FLAG", "anti-Flag", "anti-His", "anti-GST", "anti-Xpress", "anti-V5", "anti-HPC4", "anti-Myc", "anti-myc", "anti-phophotyrosine", "anti-serotonin", "anti-5HT", "anti-5-HT", "anti-HRP", "anti-GABA", "anti-ubiquitin", "anti-GFP", "anti-actin", "anti-FMRFamide", "anti-RFamide", "anti-MBP", "anti-TMG", "anti-VSV", "anti-H3K4me3"]
-COMBINATION_1 = ["preparation", "prepared", "prepare", "production", "purification", "generation", "generate", "generated", "produce", "produced", "purify", "purified", "raised"]
+# EXCLUDE_WORDS = ["anti-mouse", "anti-human", "anti-inflammatory", "anti-aging", "anti-phase", "anti-digoxigenin",
+# "anti-m1a", "anti-gapdh", "anti-HA", "anti-FLAG", "anti-Flag", "anti-His", "anti-GST", "anti-Xpress", "anti-V5",
+# "anti-HPC4", "anti-Myc", "anti-myc", "anti-phophotyrosine", "anti-serotonin", "anti-5HT", "anti-5-HT", "anti-HRP",
+# "anti-GABA", "anti-ubiquitin", "anti-GFP", "anti-actin", "anti-FMRFamide", "anti-RFamide", "anti-MBP", "anti-TMG",
+# "anti-VSV", "anti-H3K4me3"]
+
+COMBINATION_1 = ["preparation", "prepared", "prepare", "production", "purification", "generation", "generate",
+                 "generated", "produce", "produced", "purify", "purified", "raised"]
 COMBINATION_2 = ["antiserum", "antibody", "antibodies", "antisera"]
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -43,21 +52,29 @@ def main():
     cm.load_from_wb_database(
         args.db_name, args.db_user, args.db_password, args.db_host, tazendra_ssh_user=args.tazendra_ssh_user,
         tazendra_ssh_passwd=args.tazendra_ssh_password, from_date=args.from_date, max_num_papers=args.max_num_papers,
-        exclude_ids=already_processed, pap_types=["Journal_article"])
-    combinations = [pair[0] + " " + pair[1] for pair in itertools.product(COMBINATION_1, COMBINATION_2)]
-    temp_results = ""
+        exclude_ids=already_processed, pap_types=["Journal_article"], exclude_temp_pdf=True)
+    logger.info("Finished loading papers from DB")
+    combinations = list(itertools.product(COMBINATION_1, COMBINATION_2))
+    curated_gene_names = [re.escape(gene_name.lower()) for gene_name in db_manager.generic.get_curated_genes(
+        exclude_id_used_as_name=True)]
+    anti_gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](anti\-(?:" + "|".join(curated_gene_names) +
+                                 "|C\. elegans))[\s\.;:,'\"\)\]\}\>\?]")
+    combinations_regex = [(comb, re.compile(".*" + comb[0] + "\s.*" + comb[1] + "[\s\.;:,'\"\)\]\}\>\?]"),
+                           re.compile(".*" + comb[1] + "\s.*" + comb[0] + "[\s\.;:,'\"\)\]\}\>\?]")) for comb in
+                          combinations]
     for paper in cm.get_all_papers():
-        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=True)
+        logger.info("Extracting antibody info from paper " + paper.paper_id)
+        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=False)
         matches = set()
         for sentence in sentences:
-            results = re.findall(r"anti\-[\w]+", sentence)
-            matches.update(list(results))
-            matches.update([comb for comb in combinations if comb in sentence])
-        matches = matches - set([exc.lower() for exc in EXCLUDE_WORDS])
-        temp_results += paper.paper_id + "\t" + " ".join(matches) + "\n"
-    # TODO: save results to DB
-    with open("temp_results.csv", "w") as out_file:
-        out_file.write(temp_results)
+            sentence = sentence.replace('–', '-')
+            results = re.findall(anti_gene_regex, sentence)
+            matches.update(results)
+            matches.update([comb[0] + " " + comb[1] for comb, regex1, regex2 in combinations_regex if
+                            re.match(regex1, sentence.lower()) or re.match(regex2, sentence.lower())])
+        db_manager.generic.save_antybody_str_values(paper_id=paper.paper_id, str_values=", ".join(matches))
+        logger.info("Values for paper " + paper.paper_id + " saved to DB")
+    logger.info("Finished")
 
 
 if __name__ == '__main__':

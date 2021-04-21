@@ -15,6 +15,11 @@ ENV DB_PASSWD=""
 ENV MAX_NUM_PAPERS=50
 ENV TAZENDRA_SSH_USER=""
 ENV TAZENDRA_SSH_PASSWD=""
+ENV EMAIL_USER=""
+ENV EMAIL_HOST=""
+ENV EMAIL_PORT=""
+ENV EMAIL_PASSWD=""
+ENV EMAIL_RECIPIENT=""
 ENV FROM_DATE="1970-01-01"
 
 ADD crontab /etc/cron.d/antibody-ext-cron
@@ -32,4 +37,9 @@ CMD echo $DB_HOST > /etc/antibody_ext_db_host && \
     echo $TAZENDRA_SSH_USER > /etc/antibody_ext_tazendra_ssh_user && \
     echo $TAZENDRA_SSH_PASSWD > /etc/antibody_ext_tazendra_ssh_passwd && \
     echo $FROM_DATE > /etc/antibody_ext_from_date && \
+    echo $EMAIL_USER > /etc/antibody_ext_email_user && \
+    echo $EMAIL_HOST > /etc/antibody_ext_email_host && \
+    echo $EMAIL_PORT > /etc/antibody_ext_email_port && \
+    echo $EMAIL_PASSWD > /etc/antibody_ext_email_passwd && \
+    echo $EMAIL_RECIPIENT > /etc/antibody_ext_email_recipient && \
     cron && tail -f /dev/null
