@@ -54,7 +54,8 @@ def main():
     send_email_with_attachment(subject=("[Test] " if args.testing else "") + "[Antibody STR] Weekly Digest",
                                content=email_text, recipients=[args.email_recipient], server_host=args.email_host,
                                server_port=args.email_port, email_user=args.email_user,
-                               email_passwd=args.email_password, attachment=attachment_text)
+                               email_passwd=args.email_password, attachment=attachment_text,
+                               attachment_filename="results.tsv")
     logger.info("Finished")
 
 
