@@ -19,6 +19,7 @@ from wbtools.literature.corpus import CorpusManager
 # "anti-VSV", "anti-H3K4me3"]
 
 EXCLUDE_GENES = ['PDI']
+EXCLUDE_ANTIBODY_SENTENCE_GENES = ['Cat']
 ADDITIONAL_ANTI_KEYWORDS = ['MSP']
 ADDITIONAL_KEYWORDS = ['MH46', 'SP56', 'a-SP56']
 
@@ -76,6 +77,7 @@ def main():
     curated_gene_names = list(set(curated_gene_names) - set([gene_name.lower() for gene_name in EXCLUDE_GENES]))
     additional_match_regex = re.compile(r"[\s\(\[\{\.,;:\'\"\<](" + "|".join(ADDITIONAL_KEYWORDS) + ")[\s\.;:,'\"\)\]\}\>\?]")
     curated_gene_names.extend([re.escape(additional_gene.lower()) for additional_gene in ADDITIONAL_ANTI_KEYWORDS])
+    gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](" + "|".join(curated_gene_names) + ")[\s\.;:,'\"\)\]\}\>\?]")
     anti_gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](anti\-(?:" + "|".join(curated_gene_names) +
                                  "|C\. elegans))[\s\.;:,'\"\)\]\}\>\?]")
     combinations_regex = [(comb, re.compile(".*" + comb[0] + "\s.*" + comb[1] + "[\s\.;:,'\"\)\]\}\>\?]"),
@@ -110,6 +112,11 @@ def main():
             # additional matches
             add_matched = re.findall(additional_match_regex, sentence)
             matches.update(add_matched)
+
+            # antibody + gene name
+            if "antibody" in sentence.lower() or "antibodies" in sentence.lower():
+                gene_matches = re.findall(gene_regex, sentence)
+                matches.update(["antibody " + gene_match for gene_match in gene_matches if gene_match not in EXCLUDE_ANTIBODY_SENTENCE_GENES])
 
         results.append((paper.paper_id, db_manager.antibody.get_antibody_str_value(paper.paper_id),
                         ", ".join(matches)))
