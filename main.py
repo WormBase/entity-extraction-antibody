@@ -78,6 +78,7 @@ def main():
     curated_gene_names.extend([re.escape(additional_gene.lower()) for additional_gene in ADDITIONAL_ANTI_KEYWORDS])
     anti_gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](anti\-(?:" + "|".join(curated_gene_names) +
                                  "|C\. elegans))[\s\.;:,'\"\)\]\}\>\?]")
+    anti_tubulin_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<]anti\-tubulin[\s\.;:,'\"\)\]\}\>\?]")
     combinations_regex = [(comb, re.compile(".*" + comb[0] + "\s.*" + comb[1] + "[\s\.;:,'\"\)\]\}\>\?]"),
                            re.compile(".*" + comb[1] + "\s.*" + comb[0] + "[\s\.;:,'\"\)\]\}\>\?]")) for comb in
                           combinations]
@@ -109,6 +110,9 @@ def main():
             # additional matches
             add_matched = re.findall(additional_match_regex, sentence)
             matches.update(add_matched)
+
+            antitub_matches = re.findall(anti_tubulin_regex, sentence)
+            matches.update(antitub_matches)
 
         results.append((paper.paper_id, db_manager.antibody.get_antibody_str_value(paper.paper_id),
                         ", ".join(matches)))
