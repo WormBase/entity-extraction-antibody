@@ -89,8 +89,7 @@ def main():
 
     for paper in cm.get_all_papers():
         logger.info("Extracting antibody info from paper " + paper.paper_id)
-        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=False,
-                                        remove_sections=[PaperSections.REFERENCES], must_be_present=[PaperSections.METHOD, PaperSections.RESULTS])
+        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=False)
         matches = set()
         for sentence in sentences:
             sentence = sentence.replace('–', '-')
