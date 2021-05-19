@@ -2,14 +2,14 @@ import argparse
 import itertools
 import logging
 import re
-from wbtools.literature.paper import PaperSections
 
 from wbtools.db.dbmanager import WBDBManager
 from wbtools.literature.corpus import CorpusManager
 
 
 EXCLUDE_GENES = ['PDI']
-ADDITIONAL_GENES = ['MSP']
+ADDITIONAL_ANTI_KEYWORDS = ['MSP']
+ADDITIONAL_KEYWORDS = ['MH46', 'SP56', 'a-SP56']
 
 COMBINATION_1 = ["preparation", "prepared", "prepare", "production", "purification", "generation", "generate",
                  "generated", "produce", "produced", "purify", "purified", "raised"]
@@ -44,7 +44,7 @@ def main():
 
     cm = CorpusManager()
     db_manager = WBDBManager(dbname=args.db_name, user=args.db_user, password=args.db_password, host=args.db_host)
-    already_processed = db_manager.generic.get_paper_ids_processed_antibody()
+    already_processed = db_manager.antibody.get_paper_ids_processed_antibody()
     cm.load_from_wb_database(
         args.db_name, args.db_user, args.db_password, args.db_host, tazendra_ssh_user=args.tazendra_ssh_user,
         tazendra_ssh_passwd=args.tazendra_ssh_password, from_date=args.from_date, max_num_papers=args.max_num_papers,
@@ -54,8 +54,8 @@ def main():
     curated_gene_names = [re.escape(gene_name.lower()) for gene_name in db_manager.generic.get_curated_genes(
         exclude_id_used_as_name=True)]
     curated_gene_names = list(set(curated_gene_names) - set([gene_name.lower() for gene_name in EXCLUDE_GENES]))
-    gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](" + "|".join(curated_gene_names) + ")[\s\.;:,'\"\)\]\}\>\?]")
-    curated_gene_names.extend([re.escape(additional_gene.lower()) for additional_gene in ADDITIONAL_GENES])
+    additional_match_regex = re.compile(r"[\s\(\[\{\.,;:\'\"\<](" + "|".join(ADDITIONAL_KEYWORDS) + ")[\s\.;:,'\"\)\]\}\>\?]")
+    curated_gene_names.extend([re.escape(additional_gene.lower()) for additional_gene in ADDITIONAL_ANTI_KEYWORDS])
     anti_gene_regex = re.compile(r"(?i)[\s\(\[\{\.,;:\'\"\<](anti\-(?:" + "|".join(curated_gene_names) +
                                  "|C\. elegans))[\s\.;:,'\"\)\]\}\>\?]")
     combinations_regex = [(comb, re.compile(".*" + comb[0] + "\s.*" + comb[1] + "[\s\.;:,'\"\)\]\}\>\?]"),
@@ -67,6 +67,7 @@ def main():
         matches = set()
         for sentence in sentences:
             sentence = sentence.replace('–', '-')
+            sentence = sentence.replace('‐', '-')
 
             # match anti-GENE patterns
             anti_gene_matches = re.findall(anti_gene_regex, sentence)
@@ -74,18 +75,16 @@ def main():
                                  anti_gene_match[5:].lower() != anti_gene_match[5:]]
             matches.update(anti_gene_matches)
 
-            # match antibody + gene name in sentence
-            if " antibody" in sentence.lower() or " antibodies" in sentence.lower():
-                gene_matches = re.findall(gene_regex, sentence)
-                gene_matches = [gene_match for gene_match in gene_matches if gene_match.lower() != gene_match]
-                if gene_matches:
-                    matches.add("antibody " + " ".join(list(set(gene_matches))))
-
             # match combinations
             comb_matches = [comb[0] + " " + comb[1] for comb, regex1, regex2 in combinations_regex if
                             re.match(regex1, sentence.lower()) or re.match(regex2, sentence.lower())]
             matches.update(comb_matches)
-        db_manager.generic.save_antybody_str_values(paper_id=paper.paper_id, str_values=", ".join(matches))
+
+            # additional matches
+            add_matched = re.findall(additional_match_regex, sentence)
+            matches.update(add_matched)
+
+        db_manager.antibody.save_antybody_str_values(paper_id=paper.paper_id, str_values=", ".join(matches))
         logger.info("Values for paper " + paper.paper_id + " saved to DB")
     logger.info("Finished")
 
