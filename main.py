@@ -1,5 +1,3 @@
-# exclude Ascaris human Drosophila mammalian murine?
-
 import argparse
 import itertools
 import logging
@@ -9,12 +7,6 @@ from wbtools.literature.paper import PaperSections
 from wbtools.db.dbmanager import WBDBManager
 from wbtools.literature.corpus import CorpusManager
 
-
-# EXCLUDE_WORDS = ["anti-mouse", "anti-human", "anti-inflammatory", "anti-aging", "anti-phase", "anti-digoxigenin",
-# "anti-m1a", "anti-gapdh", "anti-HA", "anti-FLAG", "anti-Flag", "anti-His", "anti-GST", "anti-Xpress", "anti-V5",
-# "anti-HPC4", "anti-Myc", "anti-myc", "anti-phophotyrosine", "anti-serotonin", "anti-5HT", "anti-5-HT", "anti-HRP",
-# "anti-GABA", "anti-ubiquitin", "anti-GFP", "anti-actin", "anti-FMRFamide", "anti-RFamide", "anti-MBP", "anti-TMG",
-# "anti-VSV", "anti-H3K4me3"]
 
 EXCLUDE_GENES = ['PDI']
 ADDITIONAL_GENES = ['MSP']
@@ -71,9 +63,7 @@ def main():
                           combinations]
     for paper in cm.get_all_papers():
         logger.info("Extracting antibody info from paper " + paper.paper_id)
-        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=False,
-                                        remove_sections=[PaperSections.REFERENCES],
-                                        must_be_present=[PaperSections.RESULTS, PaperSections.METHOD])
+        sentences = paper.get_text_docs(include_supplemental=True, split_sentences=True, lowercase=False)
         matches = set()
         for sentence in sentences:
             sentence = sentence.replace('–', '-')
