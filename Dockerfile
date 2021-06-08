@@ -13,8 +13,9 @@ ENV DB_NAME=""
 ENV DB_USER=""
 ENV DB_PASSWD=""
 ENV MAX_NUM_PAPERS=50
-ENV TAZENDRA_SSH_USER=""
-ENV TAZENDRA_SSH_PASSWD=""
+ENV SSH_USER=""
+ENV SSH_PASSWD=""
+ENV SSH_HOST=""
 ENV EMAIL_USER=""
 ENV EMAIL_HOST=""
 ENV EMAIL_PORT=""
@@ -34,8 +35,9 @@ CMD echo $DB_HOST > /etc/antibody_ext_db_host && \
     echo $DB_USER > /etc/antibody_ext_db_user && \
     echo $DB_PASSWD > /etc/antibody_ext_db_passwd && \
     echo $MAX_NUM_PAPERS > /etc/antibody_ext_max_num_papers && \
-    echo $TAZENDRA_SSH_USER > /etc/antibody_ext_tazendra_ssh_user && \
-    echo $TAZENDRA_SSH_PASSWD > /etc/antibody_ext_tazendra_ssh_passwd && \
+    echo $SSH_USER > /etc/antibody_ext_ssh_user && \
+    echo $SSH_PASSWD > /etc/antibody_ext_ssh_passwd && \
+    echo $SSH_HOST > /etc/antibody_ext_ssh_host && \
     echo $FROM_DATE > /etc/antibody_ext_from_date && \
     echo $EMAIL_USER > /etc/antibody_ext_email_user && \
     echo $EMAIL_HOST > /etc/antibody_ext_email_host && \
