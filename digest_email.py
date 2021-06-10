@@ -31,7 +31,7 @@ def main():
                         format='%(asctime)s - %(name)s - %(levelname)s:%(message)s')
 
     db_manager = WBDBManager(dbname=args.db_name, user=args.db_user, password=args.db_password, host=args.db_host)
-    paperid_antibodystr = db_manager.generic.get_antibody_str_values(
+    paperid_antibodystr = db_manager.antibody.get_antibody_str_values(
         from_date=datetime.datetime.now() - datetime.timedelta(days=7))
     empty_papers = []
     nonempty_papers = []
