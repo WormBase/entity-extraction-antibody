@@ -24,24 +24,7 @@ ENV EMAIL_RECIPIENT=""
 ENV FROM_DATE="1970-01-01"
 
 ADD crontab /etc/cron.d/antibody-ext-cron
-RUN chmod 0644 /etc/cron.d/antibody-ext-cron
-RUN touch /var/log/antibody_ext_pipeline.log
-RUN crontab /etc/cron.d/antibody-ext-cron
 
 ENV PYTHONPATH=$PYTHONPATH:/usr/src/app/
 
-CMD echo $DB_HOST > /etc/antibody_ext_db_host && \
-    echo $DB_NAME > /etc/antibody_ext_db_name && \
-    echo $DB_USER > /etc/antibody_ext_db_user && \
-    echo $DB_PASSWD > /etc/antibody_ext_db_passwd && \
-    echo $MAX_NUM_PAPERS > /etc/antibody_ext_max_num_papers && \
-    echo $SSH_USER > /etc/antibody_ext_ssh_user && \
-    echo $SSH_PASSWD > /etc/antibody_ext_ssh_passwd && \
-    echo $SSH_HOST > /etc/antibody_ext_ssh_host && \
-    echo $FROM_DATE > /etc/antibody_ext_from_date && \
-    echo $EMAIL_USER > /etc/antibody_ext_email_user && \
-    echo $EMAIL_HOST > /etc/antibody_ext_email_host && \
-    echo $EMAIL_PORT > /etc/antibody_ext_email_port && \
-    echo $EMAIL_PASSWD > /etc/antibody_ext_email_passwd && \
-    echo $EMAIL_RECIPIENT > /etc/antibody_ext_email_recipient && \
-    cron && tail -f /dev/null
+CMD ["/bin/bash", "startup_script.sh"]
