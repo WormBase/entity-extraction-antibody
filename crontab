@@ -2,4 +2,4 @@ SHELL=/bin/bash
 BASH_ENV=/container.env
 
 00 16 * * * /usr/local/bin/python3 /usr/src/app/main.py -L INFO -N $DB_NAME -U $DB_USER -P $DB_PASSWD -H $DB_HOST -d $FROM_DATE -m $MAX_NUM_PAPERS >> /var/log/antibody_ext_pipeline.log 2>&1
-00 18 * * WED /usr/local/bin/python3 /usr/src/app/digest_email.py -L INFO -N $DB_NAME -U $DB_USER -P $DB_PASSWD -H $DB_HOST  -o $EMAIL_HOST -r $EMAIL_PORT -u EMAIL_USER -p $EMAIL_PASSWD -e $EMAIL_RECIPIENT >> /var/log/antibody_ext_email_digest.log 2>&1
+00 18 * * WED /usr/local/bin/python3 /usr/src/app/digest_email.py -L INFO -N $DB_NAME -U $DB_USER -P $DB_PASSWD -H $DB_HOST  -o $EMAIL_HOST -r $EMAIL_PORT -u $EMAIL_USER -p $EMAIL_PASSWD -e $EMAIL_RECIPIENT >> /var/log/antibody_ext_email_digest.log 2>&1
