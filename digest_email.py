@@ -42,9 +42,9 @@ def main():
             empty_papers.append((paper_id, antibody_str))
     email_text = "PAPER_ID&emsp;ANTIBODY_STR_DATA<br/>"
     attachment_text = "PAPER_ID\tANTIBODY_STR_DATA\n"
-    cur_status_source = "tazendra" if not args.testing else "mangolassi"
+    cur_status_source = "caltech-curation" if not args.testing else "caltech-curation-dev"
     for paper_id, antibody_str in [*nonempty_papers, *empty_papers]:
-        cur_stat_form_link = f"<a href=\"http://{cur_status_source}.caltech.edu/~postgres/cgi-bin/curation_status.cgi?select_cu" \
+        cur_stat_form_link = f"<a href=\"https://{cur_status_source}.textpressolab.com/priv/cgi-bin/curation_status.cgi?select_cu" \
                              f"rator=two1823&select_datatypesource=caltech&specific_papers={paper_id}&select_t" \
                              f"opic=none&checkbox_antibody=antibody&checkbox_oa=on&checkbox_cur=on&checkbox_svm=on" \
                              f"&checkbox_str=on&checkbox_afp=on&checkbox_cfp=on&papers_per_page=10&checkbox_journal=" \
